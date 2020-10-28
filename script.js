@@ -1,11 +1,14 @@
+//pedroscampoy@gmail.com
+
 let rover = {}
 let rocks = [];
 const step = 50;
+
 const printedInput = document.getElementById("console-input")
+const inputForm = document.getElementById("form");
+
 const canvas = document.getElementById("canvas");
 const context = canvas.getContext("2d");
-
-//classList.add
 
 window.onload = function (step) {
   rover = {
@@ -21,6 +24,7 @@ window.onload = function (step) {
   window.addEventListener("keydown", keypress_handler, false);
   window.addEventListener("keyup", keyup_handler(step), false);
 
+  //First draw
   drawStats(rover)
   createRocks(10, rover)
 
@@ -30,70 +34,37 @@ window.onload = function (step) {
 
 };
 
-function setRockNumber() {
-  let rockNumber = document.getElementById("rock-number").value
-  rocks = []
-  createRocks(rockNumber, rover)
-}
+//General functions
 
 function getInput() {
-  inputText = document.getElementById("input").value;
+  let inputText = document.getElementById("input").value;
+  inputText = inputText.toLowerCase();
   return inputText.split("");
 }
-const inputForm = document.getElementById("form");
 
 function getRandomRange(min, max, step) {
   const maxStep = max / step
   return step * Math.floor((Math.random() * ((maxStep - min) + min)));
 }
 
-inputForm.addEventListener("submit", (e => {
-  e.preventDefault();
-  listCommands = getInput()
-  listCommands.forEach((command, i) => {
-    setTimeout(() => {
-      printedInput.classList.remove('red-background')
-      drawConsole(">" + listCommands.join(""))
-      parseMovements(command)
-      listCommands.shift();
-      console.log(command);
-    }, i * 1000);
-  });
-  setTimeout(() => {
-    drawConsole("DONE")
-  }, (listCommands.length) * 1000)
-  })
-)
-
-function parseMovements(instruction) {
-  switch (instruction) {
-    case "f":
-      moveForward(rover, rocks)
-      break;
-    case 'b':
-      moveBackward(rover, rocks)
-      break;
-    case 'r':
-      turnRight(rover)
-      break;
-    case 'l':
-      turnLeft(rover)
-      break;
-    default:
-      drawConsole("Invalid command: " + instruction)
-      break;
-  }
+function toRadian(degree) {
+  return Math.PI / 180 * degree
 }
 
-function drawStats(rover) {
-  const directionConsole = document.getElementById("direction")
-  const xConsole = document.getElementById("x-coordinate")
-  const yConsole = document.getElementById("y-coordinate")
-  directionConsole.innerHTML = "Dir: " + rover.direction
-  xConsole.innerHTML = "X: " + rover.x / step
-  yConsole.innerHTML = "Y: " + rover.y / step
+function degToCompass(num) {
+  var val = Math.floor((num / 90) + 0.5);
+  var arr = ["E", "S", "W", "N"];
+  return arr[(val % 4)];
+}
+//Rock related
+
+function setRockNumber() {
+  let rockNumber = document.getElementById("rock-number").value
+  rocks = []
+  createRocks(rockNumber, rover)
 }
 
+////Create rock object
 function Rock(x, y) {
   this.x = x;
   this.y = y;
@@ -103,9 +74,7 @@ function Rock(x, y) {
     img.src = "img/rock.svg";
     context.drawImage(img, (this.x), (this.y), 50, 50);
   }
-
 }
-
 
 function createRocks(numberOFRocks, rover) {
   for (let i = 0; i < numberOFRocks; i++) {
@@ -119,13 +88,19 @@ function createRocks(numberOFRocks, rover) {
   }
 }
 
+//Draw related functions
+
+function drawStats(rover) {
+  const directionConsole = document.getElementById("direction")
+  const xConsole = document.getElementById("x-coordinate")
+  const yConsole = document.getElementById("y-coordinate")
+  directionConsole.innerHTML = "Dir: " + rover.direction
+  xConsole.innerHTML = "X: " + rover.x / step
+  yConsole.innerHTML = "Y: " + rover.y / step
+}
 
 function drawConsole(text) {
   printedInput.innerHTML = text
-}
-
-function toRadian(degree) {
-  return Math.PI / 180 * degree
 }
 
 function drawrover(rover) {
@@ -171,8 +146,7 @@ function draw() {
   })
 }
 
-
-//Border colission
+//Colission functions
 function borderCollision(nextX, nextY) {
   if (nextX >= canvas.width || nextX <= 0 || nextY >= canvas.height || nextY <= 0) {
     return true
@@ -181,7 +155,6 @@ function borderCollision(nextX, nextY) {
   }
 }
 
-//Rock colission
 function rockCollision(nextX, nextY) {
   rockFoundFunction = (rock => {
     return (nextX === (rock.x + (step / 2))) && ((nextY === (rock.y + step / 2)))
@@ -190,13 +163,7 @@ function rockCollision(nextX, nextY) {
   return rockFound
 }
 
-
-function degToCompass(num) {
-  var val = Math.floor((num / 90) + 0.5);
-  var arr = ["E", "S", "W", "N"];
-  return arr[(val % 4)];
-}
-
+//Direction functions
 
 function moveRover(rover, step) {
   nextX = rover.x + Math.round(step * Math.cos(toRadian(rover.angle)));
@@ -211,10 +178,8 @@ function moveRover(rover, step) {
     rover.x = nextX;
     rover.y = nextY;
   }
-
 }
 
-//DIRECTIONAL FUNCTIONS
 
 function turnLeft(rover) {
   console.log('turnLeft was called!');
@@ -244,13 +209,6 @@ function keyup_handler(event) {
   }
 }
 
-/*
-37 LEFT
-38 UP
-39 RIGHT
-40 DOWN
-*/
-
 function keypress_handler(event, step, rocks) {
   printedInput.classList.remove('red-background')
   drawConsole('MANUAL OVERRIDE')
@@ -269,8 +227,44 @@ function keypress_handler(event, step, rocks) {
 
 }
 
+//Main script
 
+inputForm.addEventListener("submit", (e => {
+  e.preventDefault();
+  listCommands = getInput()
+  listCommands.forEach((command, i) => {
+    setTimeout(() => {
+      printedInput.classList.remove('red-background')
+      drawConsole(">" + listCommands.join(""))
+      parseMovements(command)
+      listCommands.shift();
+      console.log(command);
+    }, i * 1000);
+  });
+  setTimeout(() => {
+    drawConsole("DONE")
+  }, (listCommands.length) * 1000)
+})
+)
 
-
+function parseMovements(instruction) {
+  switch (instruction) {
+    case "f":
+      moveForward(rover, rocks)
+      break;
+    case 'b':
+      moveBackward(rover, rocks)
+      break;
+    case 'r':
+      turnRight(rover)
+      break;
+    case 'l':
+      turnLeft(rover)
+      break;
+    default:
+      drawConsole("Invalid command: " + instruction)
+      break;
+  }
+}
 
 
